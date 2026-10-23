@@ -1,0 +1,71 @@
+name: Crear APK
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar codigo
+        uses: actions/checkout@v4
+
+      - name: Instalar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Instalar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependencias
+        run: npm install --legacy-peer-deps
+
+      - name: Crear proyecto Android
+        run: npx cap add android
+
+      - name: Crear iconos
+        continue-on-error: true
+        run: |
+          python -m pip install pillow
+          python make_icons.py
+          npx capacitor-assets generate --android
+
+      - name: Sincronizar app
+        run: npx cap sync android
+
+      - name: Compilar APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Renombrar APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk DS-Piano.apk
+
+      - name: Guardar APK como archivo del build
+        uses: actions/upload-artifact@v4
+        with:
+          name: DS-Piano-APK
+          path: DS-Piano.apk
+
+      - name: Publicar APK en Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          name: DS Piano v${{ github.run_number }}
+          body: Descarga DS-Piano.apk e instalalo en tu telefono Android.
+          files: DS-Piano.apk
