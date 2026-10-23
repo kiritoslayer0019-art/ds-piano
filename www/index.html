@@ -1,0 +1,139 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DS Piano</title>
+<meta name="theme-color" content="#0d0a1a">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#0d0a1a;--pn:#1d1736;--ac:#a855f7;--ac2:#22d3ee;--tx:#efeaff;--mu:#9a90b8;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+:root[data-theme=fuego]{--bg:#140806;--pn:#2e120c;--ac:#ff5a36;--ac2:#ffc247;--mu:#c49a8a}
+:root[data-theme=hielo]{--bg:#06121a;--pn:#0e2433;--ac:#22d3ee;--ac2:#7dd3fc;--mu:#8ab4c4}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;min-height:100vh;background:radial-gradient(120% 70% at 50% 0,var(--pn),var(--bg));color:var(--tx);font:14px system-ui,sans-serif;-webkit-user-select:none;user-select:none;padding:12px 0 72px}
+header{padding:0 14px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+h1{margin:0;font-size:22px;letter-spacing:2px;font-weight:800}h1 b{background:linear-gradient(90deg,var(--ac),var(--ac2));-webkit-background-clip:text;background-clip:text;color:transparent}
+#lcd{flex:1;min-width:180px;max-width:360px;padding:8px 12px;border-radius:10px;background:#0a0f14;color:var(--ac2);font:600 15px ui-monospace,monospace;border:1px solid var(--ac);box-shadow:0 0 14px color-mix(in srgb,var(--ac) 40%,transparent) inset;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.panel{margin:12px 14px;padding:12px;border-radius:16px;background:color-mix(in srgb,var(--pn) 85%,#000);border:1px solid color-mix(in srgb,var(--ac) 35%,transparent);display:flex;flex-direction:column;gap:10px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+label{display:flex;flex-direction:column;gap:4px;color:var(--mu);font-size:12px}
+input[type=range]{width:100%;accent-color:var(--ac)}
+button{font:600 13px system-ui,sans-serif;color:var(--tx);background:#ffffff12;border:1px solid #ffffff22;border-radius:10px;padding:8px 12px;cursor:pointer}
+button.act{background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff;border-color:transparent}
+button.rec{background:#c81e3a;border-color:transparent;color:#fff}
+.dot{width:26px;height:26px;border-radius:50%;padding:0;border:2px solid #fff4}
+#ov,#rt{color:var(--mu);min-width:28px;text-align:center}
+#kb{overflow-x:auto;padding:0 8px 10px;touch-action:pan-x}
+#keys{position:relative;display:flex;width:max-content;height:clamp(150px,34vh,230px);--kw:46px;padding:8px 6px 0;background:linear-gradient(var(--ac),var(--bg) 6px);border-radius:12px}
+.w{width:var(--kw);height:100%;background:linear-gradient(#fbfaff,#d6d0ec);border:1px solid #7f789c;border-radius:0 0 9px 9px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;padding-bottom:8px;color:#2a2340;font-weight:700;touch-action:pan-x}
+.w.on{background:linear-gradient(var(--ac2),var(--ac));color:#fff;transform:translateY(2px)}
+.b{position:absolute;top:8px;width:calc(var(--kw)*.6);height:60%;margin-left:6px;background:linear-gradient(#2e2848,#05030a);border-radius:0 0 7px 7px;z-index:2;color:#cfc6ee;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;box-shadow:0 4px 8px #0009;touch-action:pan-x}
+.b.on{background:linear-gradient(var(--ac),var(--ac2));color:#fff}
+.l,.n{font-style:normal;font-size:11px;text-align:center;line-height:1.15;pointer-events:none}
+#keys[data-lab=notas] .l,#keys[data-lab=teclas] .n,#keys[data-lab=ninguna] .l,#keys[data-lab=ninguna] .n{display:none}
+.hint{margin:4px 16px;color:var(--mu);font-size:12px;line-height:1.5}
+.mark{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));padding:9px 18px;border-radius:99px;background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff;font:700 13px system-ui,sans-serif;text-decoration:none;box-shadow:0 6px 22px #0008;white-space:nowrap;z-index:5}
+#md{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;z-index:9;padding:16px}#md[hidden]{display:none}
+.card{width:100%;max-width:360px;padding:18px;border-radius:20px;background:var(--pn);border:1px solid var(--ac);display:flex;flex-direction:column;gap:10px;box-shadow:0 10px 40px #000a}
+.card h2{margin:0 0 4px;font-size:18px}
+.opt{display:flex;flex-direction:column;gap:4px;text-align:left;padding:14px;border-radius:14px;background:#ffffff10;border:1px solid var(--ac);color:var(--tx);text-decoration:none;font:600 14px system-ui,sans-serif;cursor:pointer}
+.opt span{font:700 16px ui-monospace,monospace;color:var(--ac2);line-height:1.5}.opt small{color:var(--mu);font-weight:500}
+</style></head><body>
+<header><h1>DS <b>PIANO</b></h1><div id="lcd">♪ Toca una tecla</div><button id="don" class="act">♥ Apoya al creador</button></header>
+<div class="panel">
+ <div class="row" id="ins"></div>
+ <div class="grid">
+  <label>Volumen<input type="range" id="vol" min="0" max="100" value="70"></label>
+  <label>Reverb<input type="range" id="rev" min="0" max="100" value="25"></label>
+  <label>Tamaño de teclas<input type="range" id="kw" min="28" max="72" value="46"></label>
+ </div>
+ <div class="row">
+  <button id="o1">Oct −</button><span id="ov">0</span><button id="o2">Oct +</button>
+  <button id="sus">Sustain: No</button><button id="lab">Etiquetas: Teclas</button>
+  <span class="row" id="th"></span>
+ </div>
+ <div class="row"><button id="rc">● Grabar</button><button id="pl">▶ Reproducir</button><span id="rt"></span></div>
+</div>
+<div id="kb"><div id="keys" data-lab="teclas"></div></div>
+<p class="hint">Teclado físico: 1–0, Q–P, A–L, Z–M. ⇧ Shift + tecla = sostenido · Espacio = pedal · ↑ ↓ = octava. También puedes tocar las teclas en pantalla.</p>
+<div id="md" hidden><div class="card"><h2>Apoya al creador ♥</h2>
+<a class="opt" href="https://www.paypal.com/ncp/payment/QNJVCN5RMVSF8" target="_blank" rel="noopener noreferrer"><b>PayPal</b><small>Abrir enlace de pago</small></a>
+<button class="opt" id="pm"><b>Pago móvil Venezuela</b><span>33789557<br>0102<br>04121542289</span><small id="pmh">Toca para copiar todo</small></button>
+<button id="cl">Cerrar</button></div></div>
+<a class="mark" href="https://www.tiktok.com/@deathsinger_s" target="_blank" rel="noopener noreferrer">✦ Creado por @Deathsinger_s</a>
+<script>
+const $=id=>document.getElementById(id);
+const CODES=[...'1234567890'].map(c=>'Digit'+c).concat([...'qwertyuiopasdfghjklzxcvbnm'].map(c=>'Key'+c.toUpperCase()));
+const LAB=[...'1234567890qwertyuiopasdfghjklzxcvbnm'],SEMI=[0,2,4,5,7,9,11],NN=['C','D','E','F','G','A','B'],N12=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const INS={piano:{n:'Piano',h:[1,.5,.25,.12,.06],a:.008,d:1.1,s:.02,r:.25,br:7,v:.45,dec:1},
+epiano:{n:'Piano eléctrico',h:[1,.3,0,0,0,0,.08],a:.008,d:1.4,s:.03,r:.3,br:5,v:.5,dec:1},
+organo:{n:'Órgano',h:[1,.6,.4,.3,0,.15],a:.02,d:.05,s:.8,r:.1,br:9,v:.22,dec:0},
+sinte:{n:'Sinte',h:[1,.5,.33,.25,.2,.17,.14,.12,.11,.1],det:7,a:.01,d:.4,s:.5,r:.2,br:4,v:.16,dec:0},
+caja:{n:'Caja de música',b:[[1,1],[2.76,.35],[5.4,.15]],a:.008,d:.5,s:0,r:.4,br:12,v:.4,dec:1}};
+const V=[];let cur='piano',tr=0,sp=false,lock=false,sus=[],act={},ctx,master,revG,vol=.7,rec={on:false,ev:[],t0:0},timers=[],labs=['teclas','notas','ninguna'],li=0;
+// Teclado en pantalla
+const K=$('keys'),els={};
+for(let i=0;i<36;i++){const w=document.createElement('div');w.className='w';w.dataset.k=i;w.innerHTML='<i class="n">'+NN[i%7]+(2+(i/7|0))+'</i><i class="l">'+LAB[i]+'</i>';K.appendChild(w);els[i]=w;
+ if(i<35&&i%7!=2&&i%7!=6){const b=document.createElement('div');b.className='b';b.dataset.k=i+'#';b.style.left='calc(var(--kw)*'+(i+1)+' - var(--kw)*.3)';b.innerHTML='<i class="l">'+LAB[i]+'<br>⇧</i><i class="n">'+NN[i%7]+'#</i>';K.appendChild(b);els[i+'#']=b}}
+// Audio
+function init(){if(ctx){if(ctx.state!=='running')ctx.resume();return}
+ ctx=new(window.AudioContext||window.webkitAudioContext)({latencyHint:'balanced'});master=ctx.createGain();master.gain.value=vol*.6;
+ const comp=ctx.createWaveShaper(),conv=ctx.createConvolver(),cv=new Float32Array(1024);for(let i=0;i<1024;i++)cv[i]=Math.tanh(1.3*(i/511.5-1))/Math.tanh(1.3);comp.curve=cv;Object.values(INS).forEach(I=>{if(I.h){const re=new Float32Array(I.h.length+1),im=new Float32Array(I.h.length+1);I.h.forEach((a,i)=>im[i+1]=a);I.w=ctx.createPeriodicWave(re,im)}});revG=ctx.createGain();revG.gain.value=+$('rev').value/100;
+ const n=ctx.sampleRate*1.4|0,b=ctx.createBuffer(1,n,ctx.sampleRate);
+ {const d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,3)}
+ conv.buffer=b;master.connect(comp);master.connect(revG);revG.connect(conv);conv.connect(comp);comp.connect(ctx.destination)}
+function voice(f){const I=INS[cur],t=ctx.currentTime,g=ctx.createGain(),rg=ctx.createGain(),lp=ctx.createBiquadFilter(),d=I.d*(I.dec?Math.min(2,Math.max(.3,Math.pow(440/f,.45))):1);
+ lp.type='lowpass';lp.Q.value=.5;lp.frequency.value=Math.min(16000,Math.max(1500,f*I.br));
+ g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(I.v,t+I.a);g.gain.setTargetAtTime(I.v*I.s,t+I.a,d);
+ const mk=(r,a,dt)=>{const o=ctx.createOscillator();if(I.w)o.setPeriodicWave(I.w);else o.type='sine';o.frequency.value=f*r;o.detune.value=dt||0;if(a<1){const og=ctx.createGain();og.gain.value=a;o.connect(og);og.connect(lp)}else o.connect(lp);o.start(t);if(I.dec)o.stop(t+I.a+d*8+.3);return o},os=I.h?(I.det?[mk(1,1,-I.det),mk(1,1,I.det)]:[mk(1,1)]):I.b.map(([r,a])=>mk(r,a));
+ lp.connect(g);g.connect(rg);rg.connect(master);const v={rg,os,r:I.r,dec:I.dec};V.push(v);os[0].onended=()=>{const x=V.indexOf(v);if(x>=0)V.splice(x,1);try{rg.disconnect()}catch(e){}};const n=V.filter(x=>!x.q);while(n.length>16){const o=n.shift();o.q=1;rel(o,.04)}return v}
+function rel(v,tc){tc=tc||v.r;const t=ctx.currentTime;v.rg.gain.setTargetAtTime(0,t,tc);v.os.forEach(o=>{try{o.stop(t+tc*8+.1)}catch(e){}})}
+function on(kid,id,t=tr,fr){init();if(act[id])return;sus=sus.filter(x=>x.k!==kid||(rel(x,.06),false));const i=parseInt(kid),s=String(kid).endsWith('#'),m=36+12*(i/7|0)+SEMI[i%7]+(s?1:0)+12*t,f=440*Math.pow(2,(m-69)/12);
+ act[id]={v:voice(f),k:kid};act[id].v.k=kid;els[kid]&&els[kid].classList.add('on');$('lcd').textContent='♪ '+N12[m%12]+((m/12|0)-1)+'  ·  '+INS[cur].n;
+ if(rec.on&&!fr)rec.ev.push([performance.now()-rec.t0,1,kid,t,id])}
+function off(id){const a=act[id];if(!a)return;delete act[id];els[a.k]&&els[a.k].classList.remove('on');
+ if(sp||lock){sus.push(a.v);if(!a.v.dec)rel(a.v,.9)}else rel(a.v);
+ if(rec.on&&id[0]!=='r')rec.ev.push([performance.now()-rec.t0,0,id])}
+function pedal(){if(!(sp||lock)){sus.forEach(v=>rel(v));sus=[]}$('sus').textContent='Sustain: '+((sp||lock)?'Sí':'No');$('sus').classList.toggle('act',sp||lock)}
+function reveal(k){const e=els[k],c=$('kb'),x=e.offsetLeft;if(x<c.scrollLeft+20||x+e.offsetWidth>c.scrollLeft+c.clientWidth-20)c.scrollTo({left:x-c.clientWidth/2,behavior:'smooth'})}
+function oct(d){tr=Math.max(-2,Math.min(2,tr+d));$('ov').textContent=(tr>0?'+':'')+tr}
+// Teclado físico
+addEventListener('keydown',e=>{
+ if(e.code==='Space'){e.preventDefault();if(!sp){sp=true;pedal()}return}
+ if(e.code==='ArrowUp'||e.code==='ArrowDown'){e.preventDefault();if(!e.repeat)oct(e.code==='ArrowUp'?1:-1);return}
+ const i=CODES.indexOf(e.code);if(i<0||e.ctrlKey||e.metaKey||e.altKey)return;e.preventDefault();if(e.repeat)return;
+ const kid=i+((e.shiftKey&&i<35&&i%7!=2&&i%7!=6)?'#':'');on(kid,e.code);reveal(kid)});
+addEventListener('keyup',e=>{if(e.code==='Space'){e.preventDefault();sp=false;pedal()}else if(CODES.includes(e.code)){e.preventDefault();off(e.code)}});
+addEventListener('blur',()=>{sp=false;pedal();Object.keys(act).forEach(off)});
+// Toque / ratón
+const pk={};
+K.addEventListener('pointerdown',e=>{const t=e.target.closest('[data-k]');if(!t)return;pk[e.pointerId]=t.dataset.k;on(t.dataset.k,'p'+e.pointerId)});
+K.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse'||!e.buttons)return;const t=document.elementFromPoint(e.clientX,e.clientY),k=t&&t.closest&&t.closest('[data-k]');
+ if(k&&k.dataset.k!==pk[e.pointerId]){off('p'+e.pointerId);pk[e.pointerId]=k.dataset.k;on(k.dataset.k,'p'+e.pointerId)}});
+['pointerup','pointercancel'].forEach(n=>addEventListener(n,e=>{if(pk[e.pointerId]!==undefined){delete pk[e.pointerId];off('p'+e.pointerId)}}));
+// Controles
+Object.keys(INS).forEach(k=>{const b=document.createElement('button');b.textContent=INS[k].n;b.className=k===cur?'act':'';b.onclick=()=>{cur=k;[...$('ins').children].forEach(x=>x.classList.toggle('act',x===b));$('lcd').textContent='♪ '+INS[k].n};$('ins').appendChild(b)});
+$('vol').oninput=e=>{vol=e.target.value/100;if(master)master.gain.value=vol*.6};
+$('rev').oninput=e=>{if(revG)revG.gain.value=e.target.value/100};
+$('kw').oninput=e=>K.style.setProperty('--kw',e.target.value+'px');
+$('o1').onclick=()=>oct(-1);$('o2').onclick=()=>oct(1);
+$('sus').onclick=()=>{lock=!lock;pedal()};
+$('lab').onclick=()=>{li=(li+1)%3;K.dataset.lab=labs[li];$('lab').textContent='Etiquetas: '+['Teclas','Notas','Ninguna'][li]};
+[['neon','#a855f7'],['fuego','#ff5a36'],['hielo','#22d3ee']].forEach(([n,c])=>{const b=document.createElement('button');b.className='dot';b.style.background=c;b.setAttribute('aria-label',n);b.onclick=()=>document.documentElement.dataset.theme=n;$('th').appendChild(b)});
+// Grabación
+function stopPlay(){timers.forEach(clearTimeout);timers=[];Object.keys(act).filter(k=>k[0]==='r').forEach(off);$('pl').textContent='▶ Reproducir'}
+$('rc').onclick=()=>{if(!rec.on){stopPlay();rec={on:true,ev:[],t0:performance.now()};$('rc').textContent='■ Detener';$('rc').classList.add('rec');$('rt').textContent='Grabando…'}
+ else{rec.on=false;$('rc').textContent='● Grabar';$('rc').classList.remove('rec');const l=rec.ev.length?rec.ev[rec.ev.length-1][0]/1000:0;$('rt').textContent=l.toFixed(1)+' s'}};
+$('pl').onclick=()=>{if(timers.length){stopPlay();return}if(rec.on||!rec.ev.length)return;init();$('pl').textContent='■ Parar';
+ rec.ev.forEach(([t,s,a,b,c])=>timers.push(setTimeout(()=>s?on(a,'r'+c,b,1):off('r'+a),t)));
+ timers.push(setTimeout(stopPlay,rec.ev[rec.ev.length-1][0]+900))};
+$('kb').scrollLeft=14*46-60;
+// Apoya al creador
+function cp(t){let ok=false;try{const a=document.createElement('textarea');a.value=t;a.style.cssText='position:fixed;opacity:0';document.body.appendChild(a);a.select();ok=document.execCommand('copy');a.remove()}catch(e){}
+ if(!ok&&navigator.clipboard)return navigator.clipboard.writeText(t).then(()=>true,()=>false);return Promise.resolve(ok)}
+$('don').onclick=()=>{$('md').hidden=false};
+$('cl').onclick=()=>{$('md').hidden=true};
+$('md').onclick=e=>{if(e.target===$('md'))$('md').hidden=true};
+$('pm').onclick=()=>cp('33789557\n0102\n04121542289').then(ok=>{$('pmh').textContent=ok?'¡Copiado! ✓':'No se pudo copiar';setTimeout(()=>$('pmh').textContent='Toca para copiar todo',2200)});
+// Abrir enlaces externos (TikTok, PayPal) en el navegador del telefono dentro de la app APK
+document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[target=_blank]');if(a&&window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform()){e.preventDefault();location.href=a.href}});
+</script></body></html>
